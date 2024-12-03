@@ -1,43 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet with Firebase Integration</title>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.74.0/dist/L.Control.Locate.min.css" />
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.74.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+
+    <!-- Firebase -->
+    <script type="module">
+      // Firebase Initialization
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+  
+      const firebaseConfig = {
+          apiKey: "AIzaSyClls53k5l5GtrAth9mOTR00yMoxiu3-84",
+          authDomain: "embedded-gps-locator.firebaseapp.com",
+          databaseURL: "https://embedded-gps-locator-default-rtdb.firebaseio.com",
+          projectId: "embedded-gps-locator",
+          storageBucket: "embedded-gps-locator.appspot.com",
+          messagingSenderId: "38444798406",
+          appId: "1:38444798406:web:48958316a462eb279462c7",
+          measurementId: "G-9EBJ7J71CD"
+      };
+  
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+  
+      // Map Initialization
+      var map = L.map('map').setView([10.27, 123.84], 1);
+  
+      // OpenStreetMap Layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+  
+      // Locate Control
+      L.control.locate().addTo(map);
+  
+      // Firebase Realtime Database Reference
+// Firebase Realtime Database Reference
+const gpsRef = ref(database, 'GPS');
+
+// Fetch GPS data and add a marker
+onValue(gpsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        const { f_latitude: latitude, f_longitude: longitude } = data;
+        if (latitude && longitude) {
+            // Create a custom marker with an icon
+            const marker = L.marker([latitude, longitude], {
+                icon: L.icon({
+                    iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png", // Custom marker icon URL
+                    iconSize: [20, 32],  // Size of the icon
+                    iconAnchor: [16, 32] // Anchor point (where the marker "sticks" to the map)
+                })
+            }).addTo(map);
+            
+            // Bind a popup with the location details
+            marker.bindPopup(`<b>GPS Location</b><br>Latitude: ${latitude}<br>Longitude: ${longitude}`);
+            
+            // Set map view to the new location
+            map.setView([latitude, longitude], 16);
+        }
+    }
+});
+
+  </script>
+</body>
+
 </html>
