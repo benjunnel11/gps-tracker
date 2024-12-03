@@ -85,7 +85,7 @@ onValue(gpsRef, (snapshot) => {
             marker.bindPopup(`<b>GPS Location</b><br>Latitude: ${latitude}<br>Longitude: ${longitude}`);
             
             // Set map view to the new location
-            map.setView([latitude, longitude], 16);
+            map.setView([latitude, longitude], 30);
         }
     }
 });
